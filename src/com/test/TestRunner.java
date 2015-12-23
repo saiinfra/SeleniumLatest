@@ -492,6 +492,7 @@ public class TestRunner {
 			HSSFWorkbook workBook = new HSSFWorkbook(fileSystem);
 			HSSFSheet sheet = workBook.getSheetAt(0);
 			Iterator rows = sheet.rowIterator();
+			
 
 			while (rows.hasNext()) {
 				HSSFRow row = (HSSFRow) rows.next();
@@ -509,6 +510,7 @@ public class TestRunner {
 					HSSFCell cell = (HSSFCell) cells.next();
 
 					System.out.println("Cell No.: " + cell.getCellNum());
+				
 
 					/*
 					 * Now we will get the cell type and display the values
@@ -528,9 +530,13 @@ public class TestRunner {
 
 						// cell type string.
 						String richTextString = cell.getStringCellValue();
+						if(richTextString.equals("TS_000000005"))
+						{
 
 						System.out.println("String value: "
 								+ richTextString.toString());
+						}
+
 
 						break;
 					}
