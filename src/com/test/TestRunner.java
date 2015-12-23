@@ -1,7 +1,10 @@
 package com.test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -9,6 +12,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -49,6 +57,8 @@ public class TestRunner {
 	}
 
 	public static void main(String[] args) {
+		
+		//args[0]------->Test Suite Name~TestInformationid
 		System.out.println("Parameter " + args[0]);
 		init(args[0]);
 	}
@@ -133,8 +143,19 @@ public class TestRunner {
 		// execute shell to checkout files to testsrc dir
 		ExecShellScript exec = new ExecShellScript();
 
+
 		// checkout from git
 		// exec.checkOutSrc(repoURL);
+		
+
+		// load xls file and read contents of xls
+
+		String xlsPath = "/home/srikanth/SeleniumLatest/testsrc1/src/com/test/excelsample.xls";
+
+		displayFromExcel(xlsPath);
+		
+		
+		
 		// find the classes in git repo
 		// copy files to Test Framework src
 		for (int i = 0; i < arr.length; i++) {
@@ -185,7 +206,8 @@ public class TestRunner {
 
 		TestMetadataLogDAO testMetadataLogDAO = (TestMetadataLogDAO) Factory
 				.getObjectInstance("TestMetadataLogDAO");
-		testMetadataLogDAO.insert(testMetadataLogDO, sfHandle,getTestInformationId());
+		testMetadataLogDAO.insert(testMetadataLogDO, sfHandle,
+				getTestInformationId());
 
 	}
 
@@ -450,6 +472,82 @@ public class TestRunner {
 
 	public static void setTestcase(String testcase) {
 		TestRunner.testcase = testcase;
+	}
+
+	public static void displayFromExcel(String xlsPath) {
+		InputStream inputStream = null;
+
+		try {
+			inputStream = new FileInputStream(xlsPath);
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found in the specified path.");
+			e.printStackTrace();
+		}
+
+		POIFSFileSystem fileSystem = null;
+
+		try {
+			fileSystem = new POIFSFileSystem(inputStream);
+
+			HSSFWorkbook workBook = new HSSFWorkbook(fileSystem);
+			HSSFSheet sheet = workBook.getSheetAt(0);
+			Iterator rows = sheet.rowIterator();
+
+			while (rows.hasNext()) {
+				HSSFRow row = (HSSFRow) rows.next();
+
+				// display row number in the console.
+				System.out.println("Row No.: " + row.getRowNum());
+
+				// once get a row its time to iterate through cells.
+				List<String> list = new ArrayList<String>();
+
+				Iterator cells = row.cellIterator();
+
+				while (cells.hasNext()) {
+
+					HSSFCell cell = (HSSFCell) cells.next();
+
+					System.out.println("Cell No.: " + cell.getCellNum());
+
+					/*
+					 * Now we will get the cell type and display the values
+					 * accordingly.
+					 */
+					switch (cell.getCellType()) {
+					case HSSFCell.CELL_TYPE_NUMERIC: {
+
+						// cell type numeric.
+						System.out.println("Numeric value: "
+								+ cell.getNumericCellValue());
+
+						break;
+					}
+
+					case HSSFCell.CELL_TYPE_STRING: {
+
+						// cell type string.
+						String richTextString = cell.getStringCellValue();
+
+						System.out.println("String value: "
+								+ richTextString.toString());
+
+						break;
+					}
+
+					default: {
+
+						// types other than String and Numeric.
+						System.out.println("Type not supported.");
+
+						break;
+					}
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
